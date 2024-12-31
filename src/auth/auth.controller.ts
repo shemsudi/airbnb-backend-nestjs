@@ -9,10 +9,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthGuard } from './auth.guard';
+import { AuthGuard } from './guards/auth.guard';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
-import { GoogleOAuthGuard } from './google-auth.guard';
+import { GoogleOAuthGuard } from './guards/google-auth.guard';
 
 @Controller('auth')
 export class AuthController {
