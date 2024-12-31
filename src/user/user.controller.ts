@@ -12,7 +12,7 @@ import { UserService } from './user.sevice';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Roles } from 'src/auth/roles/roles.decorator';
 import { Role } from 'src/auth/roles/role.enum';
-import { RolesGuard } from 'src/auth/roles/roles.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @Controller('user')
 export class UserController {

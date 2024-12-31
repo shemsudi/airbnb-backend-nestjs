@@ -7,7 +7,7 @@ import {
   InferSubjects,
 } from '@casl/ability';
 import { User } from 'src/user/schemas/user.schema'; // assuming User schema is defined
-import { Action } from './action.enum'; // assuming Action enum is defined
+import { Action } from './dto/action.enum'; // assuming Action enum is defined
 import { Listing } from 'src/listing/schemas/listing.schema';
 
 // Define Subjects type for CASL (you can use `| 'all'` if you want to allow permission checks on anything)
@@ -32,13 +32,9 @@ export class CaslAbilityFactory {
       can(Action.Read, 'all');
     }
 
-    // Users can update Listings they authored
-    // can(Action.Update, Listing, { id: user.id });
-
     // Prevent users from deleting published Listings
     cannot(Action.Delete, Listing, { isCompleted: true });
 
-    // Return the built ability, with subject type detection for CASL
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,

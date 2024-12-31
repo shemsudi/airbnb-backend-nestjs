@@ -10,6 +10,9 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
+import { SendOtpDto } from './dto/send-otp.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { GoogleOAuthGuard } from './google-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -28,12 +31,18 @@ export class AuthController {
   }
 
   @Post('/SendOtp')
-  async sendOtp(@Body() body: Record<string, any>) {
+  async sendOtp(@Body() body: SendOtpDto) {
     return this.authService.sendOtp(body.phoneNumber);
   }
 
   @Post('/verifyOtp')
-  async verifyOtp(@Body() body: Record<string, any>) {
-    return this.authService.verifyOtp(body.phone, body.otp);
+  async verifyOtp(@Body() body: VerifyOtpDto) {
+    return this.authService.verifyOtp(body.phoneNumber, body.otp);
+  }
+
+  @Get('/google/callback')
+  @UseGuards(GoogleOAuthGuard)
+  googleAuthRedirect(@Request() req) {
+    return this.authService.googleLogin(req);
   }
 }

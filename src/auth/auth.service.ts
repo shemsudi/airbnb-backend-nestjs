@@ -2,7 +2,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  Options,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -49,30 +49,71 @@ export class AuthService {
     };
   }
 
-  async sendOtp(phoneNumber: string): Promise<{ msg: string }> {
+  async sendOtp(phoneNumber: string): Promise<{ msg: boolean }> {
     const serviceSid = this.configService.get(
       'TWILIO_VERIFICATION_SERVICE_SID',
     );
-    let msg = '';
-    await this.twilioClient.verify.v2
-      .services(serviceSid)
-      .verifications.create({ to: phoneNumber, channel: 'sms' })
-      .then((verification) => (msg = verification.status));
-
-    return { msg: msg };
+    try {
+      const verification = await this.twilioClient.verify.v2
+        .services(serviceSid)
+        .verifications.create({ to: phoneNumber, channel: 'sms' });
+      console.log(verification);
+      if (verification.valid) {
+        return { msg: verification.valid };
+      } else {
+        throw new HttpException(
+          'Could not send the otp. Please try again',
+          HttpStatus.EXPECTATION_FAILED,
+        );
+      }
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to send OTP. Please try again later.',
+      );
+    }
   }
 
   async verifyOtp(phoneNumber: string, code: string) {
     const serviceSid = this.configService.get(
       'TWILIO_VERIFICATION_SERVICE_SID',
     );
-    let msg = '';
     const user = await this.userService.findOneByPhone(phoneNumber);
     console.log('user', user);
-    await this.twilioClient.verify.v2
-      .services(serviceSid)
-      .verificationChecks.create({ to: phoneNumber, code: code })
-      .then((verification) => (msg = verification.status));
-    return { msg: msg };
+    try {
+      const verification = await this.twilioClient.verify.v2
+        .services(serviceSid)
+        .verificationChecks.create({ to: phoneNumber, code: code });
+
+      if (user && verification.valid) {
+        const JWT_SECRET = this.configService.get('JWT_SECRET');
+        const payload = {
+          sub: user.id,
+          username: user.firstName,
+          roles: user.roles,
+        };
+        return {
+          access_token: await this.jwtService.signAsync(payload, {
+            expiresIn: '1h',
+            secret: JWT_SECRET,
+          }),
+          msg: verification.valid,
+        };
+      }
+      console.log(verification);
+      return { msg: verification.valid };
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  googleLogin(req) {
+    if (!req.user) {
+      return 'No user from google';
+    }
+
+    return {
+      message: 'User information from google',
+      user: req.user,
+    };
   }
 }

@@ -6,7 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ListingController } from './listing/listing.controller';
 import { UserController } from './user/user.controller';
 import { Connection } from 'mongoose';
-import { CacheModule } from '@nestjs/cache-manager';
+// import { CacheModule } from '@nestjs/cache-manager';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.moudle';
 import { ListingModule } from './listing/listing.module';
